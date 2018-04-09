@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -138,20 +139,23 @@ class ChatClient {
    private int ClientNC;
    private int ServerNC;
    private int pre_master_key;
+   RSA rsa = new RSA();
+
    //this method starts the handshake and sends out the avaaiable choices plus random clientNC
    public String[] startHandshake(){
-       String[] CP01 = new  String[3];
+       String[] CP01 = new  String[4];
        //the 2 choices put inside the first 2 parts of the packer
        CP01[0] = "Rsa + shift + hash";    
        CP01[1] = "Rsa + shift + hash";
-       
-       //the random number is generated from 100 to 999
+       CP01[2] = "SubstitutionCipher + RSA + DigitalSignature + CA"; 
+       //Generate keys wth RSA
+       rsa.genKeys();
+
+       //generate random ClientNC
        Random random = new Random();
-    // generate a random integer from 0 to 899, then add 100
        int x = random.nextInt(900) + 100;
-       
        //random int converted to string and added
-       CP01[2] = Integer.toString(x);
+       CP01[3] = Integer.toString(x);
        ClientNC = x;
        //CP01 is put inside the gueue 
        updateQueueMethod(CP01);
@@ -183,8 +187,49 @@ class ChatClient {
        //extract choice 
        int AlgoChoice =  Integer.parseInt(SP01[0]);
        
+       //extract the public key of server 
+       String StringFromArray = SP01[3];
+       String[] Forsplitting = StringFromArray.split(",");
+        
+       BigInteger[] ServerPublicKey = new BigInteger[2]; 
+              
+        ServerPublicKey[0] = new BigInteger(Forsplitting[0]);
+        ServerPublicKey[1] = new BigInteger(Forsplitting[1]);
+
        //certify if Choice Correct with RSA decrypt
-       return null;
+       BigInteger encryptedMessage = new BigInteger(SP01[1]);
+
+       //take out the NC and make sure it is the same
+       int NCfromServer = (rsa.decrypt(encryptedMessage, ServerPublicKey)).intValue();
+       if(NCfromServer != ClientNC){
+           System.out.println("does not match the NC");
+           return null;
+       }
+       
+       //take out the serverNC 
+       ServerNC = Integer.parseInt(SP01[2]);
+       
+       //encrypt the pre_master_key with server public key
+       
+       String[] CP02 = new  String[4];
+       //generate a PRE MASTER KEY
+        Random random = new Random();
+       int x = random.nextInt(900) + 100;
+       //random int converted to string and added
+       pre_master_key = x;
+       
+       BigInteger NCinBI = new BigInteger("pre_master_key"); 
+       CP02[0] = String.valueOf(rsa.encrypt(NCinBI, ServerPublicKey));
+       CP02[1] = "1";
+       CP02[2] = "1";
+       CP02[3] = "1";
+       
+       //put CP02 in the qoue 
+       updateQueueMethod(CP02);
+       
+       
+       //Send out
+       return CP02;
        
    }
 

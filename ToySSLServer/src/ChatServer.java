@@ -139,38 +139,48 @@ public class ChatServer {
 
    }  // end main()
     
-   
+      RSA rsa = new RSA();
+   private int ClientNC;
+   private int ServerNC;
+   private int pre_master_key;
    //gets the inforamtion generated from startHandshake(), this class deicdeds what algos to use as well as send the encypted clientNC for cetryfication
    public String[] pickAlgo(String[] CP01){
       
        //client packet 1 is send to updateQueueMethod() to put inside queue
        updateQueueMethod(CP01);
-       String[] SP01 = new  String[3];
+       String[] SP01 = new  String[4];
        
        //a random fucntion picks between 1 or 2 to pick the algo
        Random random = new java.util.Random();
-       int tmp = random.nextInt(2) + 1;
+       int tmp = random.nextInt(3) + 1;
        if(tmp == 1 ){
            SP01[0] = "1";
        }
+       else if(tmp == 2 ){
+           SP01[0] = "2";
+       }
        else{
-            SP01[0] = "2";
+            SP01[0] = "3";
        }
        //the clientNC is taken out of packet
-       int ClientNC = Integer.parseInt(CP01[2]);
+       ClientNC = Integer.parseInt(CP01[2]);
        
        ///HERE NEED TO ENCRYPRt WITH SERVER PRIVATE KEY
-       RSA key = new RSA();
+       rsa.genKeys();
+      
        BigInteger NC = new BigInteger("ClientNC"); 
        //encrypt the clientNC with the privaye key of server 
-       BigInteger encrypterNC = key.encrypt(NC, key.privateKey);
+       BigInteger encrypterNC = rsa.encrypt(NC, rsa.privateKey);
        SP01[1] = String.valueOf(encrypterNC);
      
        //generate serverNC
        int x = random.nextInt(900) + 100;
        //the random number put inside packet
        SP01[2] = Integer.toString(x);
+       ServerNC = x;
        
+       //put public key in last packet spot
+       SP01[3] = (rsa.publicKey[0] + "," + rsa.publicKey[1]);
        //the updateQueueMethod() is called and SP01 Is put inside it 
        updateQueueMethod(SP01);
        //Packet returned
@@ -189,5 +199,17 @@ List<String[]> Queue = new ArrayList<String[]>();
             }
         }
    }
+   
+   public void certifyClient(String[] CP02){
+       //put cp02 inside the quoue
+       updateQueueMethod(CP02);
+       
+       //extract the premastersecret
+       BigInteger enryptedSecret = new BigInteger(CP02[0]);
+       pre_master_key = (rsa.decrypt(enryptedSecret, rsa.privateKey)).intValue();
+
+       
+   } 
+
 
 } //end class ChatServer
