@@ -1,5 +1,7 @@
 import java.net.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -145,8 +147,20 @@ class ChatClient {
        
        //random int converted to string and added
        packet[2] = Integer.toString(x);
-       return null;
-       
+       //CP01 is put inside the gueue 
+       updateQueueMethod(packet);
+       return packet;
+ 
+   }
+   List<String[]> Queue = new ArrayList<String[]>();
+
+   public void updateQueueMethod(String[] packet){
+        for (int i = 0; i < 4; i++) {
+            if(Queue.get(i) == null ){
+                Queue.set(i, packet);
+                return;
+            }
+        }
    }
 
 
