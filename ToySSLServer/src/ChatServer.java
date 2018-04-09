@@ -1,5 +1,9 @@
 import java.net.*;
 import java.io.*;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * This program is one end of a simple command-line interface chat program.
@@ -134,7 +138,56 @@ public class ChatServer {
       }
 
    }  // end main()
+    
+   
+   //gets the inforamtion generated from startHandshake(), this class deicdeds what algos to use as well as send the encypted clientNC for cetryfication
+   public String[] pickAlgo(String[] CP01){
+      
+       //client packet 1 is send to updateQueueMethod() to put inside queue
+       updateQueueMethod(CP01);
+       String[] SP01 = new  String[3];
+       
+       //a random fucntion picks between 1 or 2 to pick the algo
+       Random random = new java.util.Random();
+       int tmp = random.nextInt(2) + 1;
+       if(tmp == 1 ){
+           SP01[0] = "1";
+       }
+       else{
+            SP01[0] = "2";
+       }
+       //the clientNC is taken out of packet
+       int ClientNC = Integer.parseInt(CP01[2]);
+       
+       ///HERE NEED TO ENCRYPRt WITH SERVER PRIVATE KEY
+       RSA key = new RSA();
+       BigInteger NC = new BigInteger("ClientNC"); 
+       //encrypt the clientNC with the privaye key of server 
+       BigInteger encrypterNC = key.encrypt(NC, key.privateKey);
+       SP01[1] = String.valueOf(encrypterNC);
+     
+       //generate serverNC
+       int x = random.nextInt(900) + 100;
+       //the random number put inside packet
+       SP01[2] = Integer.toString(x);
+       
+       //the updateQueueMethod() is called and SP01 Is put inside it 
+       updateQueueMethod(SP01);
+       //Packet returned
+       return SP01;
+       
+       
+   }
+List<String[]> Queue = new ArrayList<String[]>();
 
-
+   //this method updates the list with any packets
+   public void updateQueueMethod(String[] packet){
+        for (int i = 0; i < 4; i++) {
+            if(Queue.get(i) == null ){
+                Queue.set(i, packet);
+                return;
+            }
+        }
+   }
 
 } //end class ChatServer

@@ -134,11 +134,12 @@ class ChatClient {
 
    }  // end main()
 
+   //this method starts the handshake and sends out the avaaiable choices plus random clientNC
    public String[] startHandshake(){
-       String[] packet = new  String[3];
+       String[] CP01 = new  String[3];
        //the 2 choices put inside the first 2 parts of the packer
-       packet[0] = "Rsa + shift + hash";
-       packet[1] = "Rsa + shift + hash";
+       CP01[0] = "Rsa + shift + hash";    
+       CP01[1] = "Rsa + shift + hash";
        
        //the random number is generated from 100 to 999
        Random random = new Random();
@@ -146,14 +147,15 @@ class ChatClient {
        int x = random.nextInt(900) + 100;
        
        //random int converted to string and added
-       packet[2] = Integer.toString(x);
+       CP01[2] = Integer.toString(x);
        //CP01 is put inside the gueue 
-       updateQueueMethod(packet);
-       return packet;
+       updateQueueMethod(CP01);
+       return CP01;
  
    }
    List<String[]> Queue = new ArrayList<String[]>();
 
+   //this method updates the list with any packets
    public void updateQueueMethod(String[] packet){
         for (int i = 0; i < 4; i++) {
             if(Queue.get(i) == null ){
