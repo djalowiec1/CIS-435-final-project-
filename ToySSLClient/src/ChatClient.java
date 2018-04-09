@@ -133,7 +133,11 @@ class ChatClient {
       }
 
    }  // end main()
-
+   
+   //variables for the 3 parameters both client and server need to use
+   private int ClientNC;
+   private int ServerNC;
+   private int pre_master_key;
    //this method starts the handshake and sends out the avaaiable choices plus random clientNC
    public String[] startHandshake(){
        String[] CP01 = new  String[3];
@@ -148,12 +152,15 @@ class ChatClient {
        
        //random int converted to string and added
        CP01[2] = Integer.toString(x);
+       ClientNC = x;
        //CP01 is put inside the gueue 
        updateQueueMethod(CP01);
        return CP01;
  
    }
    List<String[]> Queue = new ArrayList<String[]>();
+
+   
 
    //this method updates the list with any packets
    public void updateQueueMethod(String[] packet){
@@ -163,6 +170,22 @@ class ChatClient {
                 return;
             }
         }
+   }
+   //Takes the packet generated from pickAlgo() and extracts each part. 
+    //Extract the ClientNC with the server public key to make sure the NC is correct. If not, break connection.
+    //Generate a pre-master-secret, encrypt it with the servers public key and send out. 
+    //call updateQueueMethod() to take note of SP02  then call  updateQueueMethod()  to put CP02 inside 
+
+   public String[] certifyServer(String[] SP01){
+       //put SP01 inside the list of packets
+       updateQueueMethod(SP01);
+       
+       //extract choice 
+       int AlgoChoice =  Integer.parseInt(SP01[0]);
+       
+       //certify if Choice Correct with RSA decrypt
+       return null;
+       
    }
 
 
