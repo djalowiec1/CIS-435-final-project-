@@ -42,7 +42,17 @@ class ChatClient {
     */
    static final char CLOSE = '1';  //more like the type in SSL
 
-
+   
+   //variables for the 3 parameters both client and server need to use
+   private int ClientNC;
+   private int ServerNC;
+   private int pre_master_key;
+   private int AlgoChoice;
+   private int KC;
+   private int MC;
+   private int KS;
+   private int MS;
+   RSA rsa = new RSA();
 
 
    public static void main(String[] args) {
@@ -134,12 +144,7 @@ class ChatClient {
       }
 
    }  // end main()
-   
-   //variables for the 3 parameters both client and server need to use
-   private int ClientNC;
-   private int ServerNC;
-   private int pre_master_key;
-   RSA rsa = new RSA();
+
 
    //this method starts the handshake and sends out the avaaiable choices plus random clientNC
    public String[] startHandshake(){
@@ -185,7 +190,7 @@ class ChatClient {
        updateQueueMethod(SP01);
        
        //extract choice 
-       int AlgoChoice =  Integer.parseInt(SP01[0]);
+       AlgoChoice =  Integer.parseInt(SP01[0]);
        
        //extract the public key of server 
        String StringFromArray = SP01[3];
@@ -218,6 +223,7 @@ class ChatClient {
        //random int converted to string and added
        pre_master_key = x;
        
+       //pre-master-key is converted to a string and put inside the CP02, 1's are put in other postions.
        BigInteger NCinBI = new BigInteger("pre_master_key"); 
        CP02[0] = String.valueOf(rsa.encrypt(NCinBI, ServerPublicKey));
        CP02[1] = "1";
@@ -231,6 +237,14 @@ class ChatClient {
        //Send out
        return CP02;
        
+   }
+   //Used the ClientNC , ServerNC , as well as the pre-mater-key   to generate the keys that will be used, all are 3 digits
+   public void clientGenerateKeys(){
+       //mulitpy together to generate keys
+       int result = ClientNC * ServerNC * pre_master_key;
+       
+       //sepeare reulst in 2 char chunks, each representing a key
+       //NOT DONE 
    }
 
 

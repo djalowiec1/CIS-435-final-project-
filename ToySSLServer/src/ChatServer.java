@@ -46,6 +46,16 @@ public class ChatServer {
    static final char CLOSE = '1'; //more like the type in SSL
 
 
+   private int ClientNC;
+   private int ServerNC;
+   private int pre_master_key;
+   private int AlgoChoice;
+   private int KC;
+   private int MC;
+   private int KS;
+   private int MS;
+   RSA rsa = new RSA();
+   
    
    public static void main(String[] args) {
 
@@ -139,10 +149,7 @@ public class ChatServer {
 
    }  // end main()
     
-      RSA rsa = new RSA();
-   private int ClientNC;
-   private int ServerNC;
-   private int pre_master_key;
+
    //gets the inforamtion generated from startHandshake(), this class deicdeds what algos to use as well as send the encypted clientNC for cetryfication
    public String[] pickAlgo(String[] CP01){
       
@@ -199,17 +206,29 @@ List<String[]> Queue = new ArrayList<String[]>();
             }
         }
    }
-   
+   //Takes the packet generated from certifyServer() and extracts each part. 
+    //Extract the pre-master-secret with the server private key
+   //makes sure both have the same key
+
    public void certifyClient(String[] CP02){
        //put cp02 inside the quoue
        updateQueueMethod(CP02);
        
-       //extract the premastersecret
+       //extract the premastersecret    
        BigInteger enryptedSecret = new BigInteger(CP02[0]);
        pre_master_key = (rsa.decrypt(enryptedSecret, rsa.privateKey)).intValue();
 
        
    } 
+   
+     public void ServerGenerateKeys(){
+       //mulitpy together to generate keys
+       int result = ClientNC * ServerNC * pre_master_key;
+       
+       //sepeare reulst in 2 char chunks, each representing a key
+       //NOT DONE 
+   }
+
 
 
 } //end class ChatServer
