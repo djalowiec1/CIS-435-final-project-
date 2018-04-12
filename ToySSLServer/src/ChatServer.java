@@ -55,7 +55,7 @@ public class ChatServer {
    private int KS;
    private int MS;
    RSA rsa = new RSA();
-   
+   List<String[]> Queue = new ArrayList<String[]>();
    
    public static void main(String[] args) {
 
@@ -160,14 +160,16 @@ public class ChatServer {
        //a random fucntion picks between 1 or 2 to pick the algo
        Random random = new java.util.Random();
        int tmp = random.nextInt(3) + 1;
-       if(tmp == 1 ){
-           SP01[0] = "1";
-       }
-       else if(tmp == 2 ){
-           SP01[0] = "2";
-       }
-       else{
-            SP01[0] = "3";
+       switch (tmp) {
+           case 1:
+               SP01[0] = "1";
+               break;
+           case 2:
+               SP01[0] = "2";
+               break;
+           default:
+               SP01[0] = "3";
+               break;
        }
        //the clientNC is taken out of packet
        ClientNC = Integer.parseInt(CP01[2]);
@@ -195,7 +197,7 @@ public class ChatServer {
        
        
    }
-List<String[]> Queue = new ArrayList<String[]>();
+
 
    //this method updates the list with any packets
    public void updateQueueMethod(String[] packet){
