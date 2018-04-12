@@ -157,11 +157,11 @@ class ChatClient {
        rsa.genKeys();
 
        //generate random ClientNC
-       Random random = new Random();
-       int x = random.nextInt(900) + 100;
+    //   Random random = new Random();
+       //int x = random.nextInt(900) + 100;
        //random int converted to string and added
-       CP01[3] = Integer.toString(x);
-       ClientNC = x;
+       CP01[3] = Integer.toString(555);
+       ClientNC = 555;
        //CP01 is put inside the gueue 
        updateQueueMethod(CP01);
        return CP01;
@@ -218,10 +218,10 @@ class ChatClient {
        
        String[] CP02 = new  String[4];
        //generate a PRE MASTER KEY
-        Random random = new Random();
-       int x = random.nextInt(900) + 100;
+      //  Random random = new Random();
+       //int x = random.nextInt(900) + 100;
        //random int converted to string and added
-       pre_master_key = x;
+       pre_master_key = 1234;
        
        //pre-master-key is converted to a string and put inside the CP02, 1's are put in other postions.
        BigInteger NCinBI = new BigInteger("pre_master_key"); 
@@ -241,7 +241,12 @@ class ChatClient {
    //Used the ClientNC , ServerNC , as well as the pre-mater-key   to generate the keys that will be used, all are 3 digits
    public void clientGenerateKeys(){
        //mulitpy together to generate keys
-       int result = ClientNC * ServerNC * pre_master_key;
+        String result = Integer.toString(ClientNC * ServerNC * pre_master_key);
+        KC = Integer.parseInt(result.substring(0, 2));
+        MC =  Integer.parseInt(result.substring(2, 4));
+        KS =  Integer.parseInt(result.substring(4, 6));
+        MS =  Integer.parseInt(result.substring(6, 8));
+
        
        //sepeare reulst in 2 char chunks, each representing a key
        //NOT DONE 

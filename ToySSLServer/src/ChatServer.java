@@ -183,10 +183,10 @@ public class ChatServer {
        SP01[1] = String.valueOf(encrypterNC);
      
        //generate serverNC
-       int x = random.nextInt(900) + 100;
+     //  int x = random.nextInt(900) + 100;
        //the random number put inside packet
-       SP01[2] = Integer.toString(x);
-       ServerNC = x;
+       SP01[2] = Integer.toString(666);
+       ServerNC = 666;
        
        //put public key in last packet spot
        SP01[3] = (rsa.publicKey[0] + "," + rsa.publicKey[1]);
@@ -225,10 +225,14 @@ public class ChatServer {
    
      public void ServerGenerateKeys(){
        //mulitpy together to generate keys
-       int result = ClientNC * ServerNC * pre_master_key;
+       //int result = ClientNC * ServerNC * pre_master_key;
        
        //sepeare reulst in 2 char chunks, each representing a key
-       //NOT DONE 
+       String result = Integer.toString(ClientNC * ServerNC * pre_master_key);
+        KC = Integer.parseInt(result.substring(0, 2));
+        MC =  Integer.parseInt(result.substring(2, 4));
+        KS =  Integer.parseInt(result.substring(4, 6));
+        MS =  Integer.parseInt(result.substring(6, 8));
    }
 
 
