@@ -1,3 +1,4 @@
+
 import java.net.*;
 import java.io.*;
 import java.math.BigInteger;
@@ -52,7 +53,9 @@ class ChatClient {
    private int MC;
    private int KS;
    private int MS;
+   String[] CP01 = new  String[4];
    RSA rsa = new RSA();
+     List<String[]> Queue = new ArrayList<String[]>();
 
 
    public static void main(String[] args) {
@@ -82,8 +85,19 @@ class ChatClient {
          incoming = new BufferedReader(
                        new InputStreamReader(connection.getInputStream()) );
          outgoing = new PrintWriter(connection.getOutputStream());
-         outgoing.println(HANDSHAKE);  // Send handshake to client.
+        
+         System.out.println("STEP 1: Client sends CP01. When send it Contains");
+        ChatClient chat = new ChatClient();
+        String[] CP01 = chat.startHandshake();
+        //  System.out.println(CP01[0] + "CP01[0]: ");
+        // System.out.println("CP01[0]: " + CP01.length);
+          System.out.println("CP01[0]: " + CP01[0]);
+          System.out.println("CP01[1]: " + CP01[1]);
+          System.out.println("CP01[2]: " + CP01[2]);
+          System.out.println("CP01[3]: " + CP01[3]);
+          System.out.println("CP01 put in quoue");
          outgoing.flush();
+         outgoing.println(HANDSHAKE);  // Send handshake to client.
          messageIn = incoming.readLine();  // Receive handshake from client.
          if (! messageIn.equals(HANDSHAKE) ) {
             throw new IOException("Connected program is not CLChat!");
@@ -148,9 +162,9 @@ class ChatClient {
 
    //this method starts the handshake and sends out the avaaiable choices plus random clientNC
    public String[] startHandshake(){
-       String[] CP01 = new  String[4];
+       
        //the 2 choices put inside the first 2 parts of the packer
-       CP01[0] = "Rsa + shift + hash";    
+       CP01[0] = "Rsa+ shift + hash";    
        CP01[1] = "Rsa + shift + hash";
        CP01[2] = "SubstitutionCipher + RSA + DigitalSignature + CA"; 
        //Generate keys wth RSA
@@ -163,21 +177,26 @@ class ChatClient {
        CP01[3] = Integer.toString(555);
        ClientNC = 555;
        //CP01 is put inside the gueue 
-       updateQueueMethod(CP01);
+        
+     //  updateQueueMethod(CP01);
+   
        return CP01;
  
    }
-   List<String[]> Queue = new ArrayList<String[]>();
+ 
 
    
 
    //this method updates the list with any packets
    public void updateQueueMethod(String[] packet){
+    
         for (int i = 0; i < 4; i++) {
             if(Queue.get(i) == null ){
+              
                 Queue.set(i, packet);
-                return;
             }
+            
+          
         }
    }
    //Takes the packet generated from pickAlgo() and extracts each part. 
@@ -251,6 +270,25 @@ class ChatClient {
        //sepeare reulst in 2 char chunks, each representing a key
        //NOT DONE 
    }
-
-
+   //use the MC to generate the MAC of the enitre packet
+    public String[] generateClientMAC(){
+        
+        
+        return null;
+    }
+    
+    
+    
+    
+    
+    
+    private String converttoString(String[] packet){
+        StringBuilder result = new StringBuilder();
+        for(String string : packet) {
+            result.append(string);
+            result.append(",");
+        }
+        return result.length() > 0 ? result.substring(0, result.length() - 1): "";
+    
+    }
 } //end class ChatClient

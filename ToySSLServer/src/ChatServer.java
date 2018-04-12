@@ -211,7 +211,7 @@ public class ChatServer {
    //Takes the packet generated from certifyServer() and extracts each part. 
     //Extract the pre-master-secret with the server private key
    //makes sure both have the same key
-
+   
    public void certifyClient(String[] CP02){
        //put cp02 inside the quoue
        updateQueueMethod(CP02);
