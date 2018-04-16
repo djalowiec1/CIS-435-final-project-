@@ -77,8 +77,8 @@ public class RSA {
         BigInteger n = Key[0];
         BigInteger d = Key[1];
         
-        System.out.println("DECRYPTION KEY: " + n);
-        System.out.println("DECRYPTION KEY: " + d);
+        //System.out.println("DECRYPTION KEY: " + n);
+      //  System.out.println("DECRYPTION KEY: " + d);
         //Decrypt Cipher to Message: message = (c^d)%n
         BigInteger message;
         message = cipher.modPow(d, n);

@@ -55,7 +55,9 @@ class ChatClient {
    private int MS;
    String[] CP01 = new  String[4];
    RSA rsa = new RSA();
-     List<String[]> Queue = new ArrayList<String[]>();
+   MacCipher mac = new MacCipher();
+   List<String[]> Queue = new ArrayList<String[]>();
+     
 
 
    public static void main(String[] args) {
@@ -85,23 +87,46 @@ class ChatClient {
          incoming = new BufferedReader(
                        new InputStreamReader(connection.getInputStream()) );
          outgoing = new PrintWriter(connection.getOutputStream());
-        
-         System.out.println("STEP 1: Client sends CP01. When send it Contains");
+        System.out.println("-----------------------------------------");
+        System.out.println("STEP 1: Client sends CP01. It Contains");
         ChatClient chat = new ChatClient();
-        String[] CP01 = chat.startHandshake();
-        //  System.out.println(CP01[0] + "CP01[0]: ");
-        // System.out.println("CP01[0]: " + CP01.length);
-          System.out.println("CP01[0]: " + CP01[0]);
-          System.out.println("CP01[1]: " + CP01[1]);
-          System.out.println("CP01[2]: " + CP01[2]);
-          System.out.println("CP01[3]: " + CP01[3]);
-          System.out.println("CP01 put in quoue");
+
+         
+       
+         
+        // step 1: client sends out CP01
+         String[] CP01 = chat.startHandshake();
+         String CP01String = chat.converttoString(CP01);
+         System.out.println(CP01String);
+         outgoing.println(CP01String);
          outgoing.flush();
-         outgoing.println(HANDSHAKE);  // Send handshake to client.
-         messageIn = incoming.readLine();  // Receive handshake from client.
-         if (! messageIn.equals(HANDSHAKE) ) {
-            throw new IOException("Connected program is not CLChat!");
-         }
+
+         
+         
+       // step 3: client receives SP01, verifies the server and sends out CP02
+        String SP01 = incoming.readLine();
+        System.out.println(SP01);
+        String CP02 [] = chat.certifyServer(SP01);
+        outgoing.println(chat.converttoString(CP02));
+        outgoing.flush();
+   
+         //step 4: keys are generated
+         chat.clientGenerateKeys();
+         
+         //step 5: THE mac is generated and send out to server
+         String MAC = chat.generateClientMAC();
+         outgoing.println(MAC);
+         outgoing.flush();
+              
+
+        // step 7: MAC is checked
+        String ServerMAC = incoming.readLine();  
+        
+        
+        if(chat.CheckMAC(ServerMAC) == false)
+        {
+            throw new Exception("Connected program is not a ChatClient!");
+        }
          System.out.println("Connected.  Enter your first message.");
       }
       catch (Exception e) {
@@ -164,9 +189,9 @@ class ChatClient {
    public String[] startHandshake(){
        
        //the 2 choices put inside the first 2 parts of the packer
-       CP01[0] = "Rsa+ shift + hash";    
-       CP01[1] = "Rsa + shift + hash";
-       CP01[2] = "SubstitutionCipher + RSA + DigitalSignature + CA"; 
+       CP01[0] = "Rsa+shift+hash";    
+       CP01[1] = "Rsa+shift+hash";
+       CP01[2] = "SubstitutionCipher+RSA+DigitalSignature+CA"; 
        //Generate keys wth RSA
        rsa.genKeys();
 
@@ -178,8 +203,16 @@ class ChatClient {
        ClientNC = 555;
        //CP01 is put inside the gueue 
         
-     //  updateQueueMethod(CP01);
+      updateQueueMethod(CP01);
    
+      
+      
+          System.out.println("           CP01[0]: " + CP01[0]);
+          System.out.println("           CP01[1]: " + CP01[1]);
+          System.out.println("           CP01[2]: " + CP01[2]);
+          System.out.println("           CP01[3]: " + CP01[3]);
+          System.out.println("           CP01 put in Client quoue");
+          System.out.println("CP01 is converted into a String and is send");
        return CP01;
  
    }
@@ -189,28 +222,31 @@ class ChatClient {
 
    //this method updates the list with any packets
    public void updateQueueMethod(String[] packet){
-    
-        for (int i = 0; i < 4; i++) {
-            if(Queue.get(i) == null ){
-              
-                Queue.set(i, packet);
-            }
+       Queue.add(packet);
             
           
-        }
+        
    }
    //Takes the packet generated from pickAlgo() and extracts each part. 
     //Extract the ClientNC with the server public key to make sure the NC is correct. If not, break connection.
     //Generate a pre-master-secret, encrypt it with the servers public key and send out. 
     //call updateQueueMethod() to take note of SP02  then call  updateQueueMethod()  to put CP02 inside 
 
-   public String[] certifyServer(String[] SP01){
+   public String[] certifyServer(String packetfromServer){
        //put SP01 inside the list of packets
+       String[] SP01 = convertToArray(packetfromServer);
        updateQueueMethod(SP01);
-       
+        System.out.println("-----------------------------------------");
+        System.out.println("STEP 3: Client verifies the Server, generated Pre_master_secret and send out  CP01");
        //extract choice 
+       System.out.println("The packet we got from the server is: ");
        AlgoChoice =  Integer.parseInt(SP01[0]);
-       
+       System.out.println("          SP01[0]: "  + SP01[0] );
+       System.out.println("          SP01[1]: "  + SP01[1] );
+       System.out.println("          SP01[2]: "  + SP01[2] );
+       System.out.println("          SP01[3]: "  + SP01[3] );
+       System.out.println("          SP01 is put inside the Client quoue");
+     
        //extract the public key of server 
        String StringFromArray = SP01[3];
        String[] Forsplitting = StringFromArray.split(",");
@@ -241,14 +277,20 @@ class ChatClient {
        //int x = random.nextInt(900) + 100;
        //random int converted to string and added
        pre_master_key = 1234;
-       
+    
        //pre-master-key is converted to a string and put inside the CP02, 1's are put in other postions.
-       BigInteger NCinBI = new BigInteger("pre_master_key"); 
+       //BigInteger NCinBI = BigInteger.ZERO;
+       BigInteger NCinBI = new BigInteger("1234");
        CP02[0] = String.valueOf(rsa.encrypt(NCinBI, ServerPublicKey));
        CP02[1] = "1";
        CP02[2] = "1";
        CP02[3] = "1";
-       
+         System.out.println("The Packet that will be send out contains");
+       System.out.println("          CP02[0] contains the Pre_master_secrer: "  + CP02[0] );
+       System.out.println("          CP02[1] is used for packet padding: "  + CP02[1] );
+       System.out.println("          CP02[2] is used for packet padding: "  + CP02[2] );
+       System.out.println("          CP02[3] is used for packet padding: "  + CP02[3] );
+       System.out.println("          CP02 is put inside the Client quoue");
        //put CP02 in the qoue 
        updateQueueMethod(CP02);
        
@@ -260,35 +302,119 @@ class ChatClient {
    //Used the ClientNC , ServerNC , as well as the pre-mater-key   to generate the keys that will be used, all are 3 digits
    public void clientGenerateKeys(){
        //mulitpy together to generate keys
+        System.out.println("-----------------------------------------");
+        System.out.println("STEP 4: Client Generates the keys on its own");
         String result = Integer.toString(ClientNC * ServerNC * pre_master_key);
         KC = Integer.parseInt(result.substring(0, 2));
         MC =  Integer.parseInt(result.substring(2, 4));
         KS =  Integer.parseInt(result.substring(4, 6));
         MS =  Integer.parseInt(result.substring(6, 8));
+        System.out.println("    KC: " + KC);
+        System.out.println("    MC: " + MC);
+        System.out.println("    KS: " + KS);
+        System.out.println("    MS: " + MS);
 
        
        //sepeare reulst in 2 char chunks, each representing a key
        //NOT DONE 
    }
-   //use the MC to generate the MAC of the enitre packet
-    public String[] generateClientMAC(){
+   //Client sends a MAC of all the handshake messages
+    //MACc = MAC(Mc, clientPacket01, serverPacket01, 
+    //clientPacket02)
+
+    public String generateClientMAC(){
+        
+        System.out.println("-----------------------------------------");
+        System.out.println("STEP 5: MAC of all packets is generated using MC");
+        
+        String[] CP01 = Queue.get(0);
+        String[] SP01 = Queue.get(1);
+        String[] CP02 = Queue.get(2);
+        
+        //cp01 IS changed so it has numbers instead of lettes
+        
+        CP01[0] = "1";
+        CP01[1] = "1";
+        CP01[2] = "1";
+        
+        //SP01 [3] is changed so can be converted to bigIntenger
+        SP01[3] = "1";
+        //Strings added Together
+        String a1 = converttoString(CP01);
+        String a2 = converttoString(SP01);
+        String a3 = converttoString(CP02);
+        String finalONE = a1 + a2 + a3;
+       finalONE = finalONE.replaceAll("\\s","");
+        //all variables converted to bigintenger so we can use them
+        BigInteger numBig = new BigInteger(finalONE);
+        BigInteger cipher = new  BigInteger( (String.valueOf(MC)) );
+        
+        //instance of the mac class is created
+        
+        mac.encrypt(numBig, cipher);
+        BigInteger result =  mac.encrypt(numBig, cipher);
+        //result is returned using tostring
+        System.out.println("    the MAC is send out");
+        return result.toString();
+    }
+    //If MACs (Calculated) == MACs (received)
+    public boolean CheckMAC(String fromServer){
         
         
-        return null;
+        System.out.println("-----------------------------------------");
+        System.out.println("STEP 7:  MAC that is received is compared to the MAC we got from server");
+        System.out.println("    Received MAC" + fromServer);
+        String[] CP01 = Queue.get(0);
+        String[] SP01 = Queue.get(1);
+        String[] CP02 = Queue.get(2);
+        
+        //cp01 IS changed so it has numbers instead of lettes
+        
+        CP01[0] = "1";
+        CP01[1] = "1";
+        CP01[2] = "1";
+        
+        //SP01 [3] is changed so can be converted to bigIntenger
+        SP01[3] = "1";
+        //Strings added Together
+        String a1 = converttoString(CP01);
+        String a2 = converttoString(SP01);
+        String a3 = converttoString(CP02);
+        String finalONE = a1 + a2 + a3;
+        finalONE = finalONE.replaceAll("\\s","");
+        //all variables converted to bigintenger so we can use them
+        BigInteger numBig = new BigInteger(finalONE);
+        BigInteger cipher = new  BigInteger( (String.valueOf(MS)) );
+        
+        //instance of the mac class is created
+        MacCipher mac = new MacCipher();
+        mac.encrypt(numBig, cipher);
+        BigInteger result =  mac.encrypt(numBig, cipher);
+        String caluclated = result.toString();
+         System.out.println("    Generated MAC" + caluclated);
+        if(caluclated.equals(fromServer)){
+            System.out.println("The MAC's match, safe to form connection");
+            return true;
+        }
+        else{
+            System.out.println("The MAC's DO NOT match");
+            return false;
+        }
+
     }
     
     
-    
+    private String[] convertToArray(String packet){
+         return packet.split(" ");
+     }
+
     
     
     
     private String converttoString(String[] packet){
-        StringBuilder result = new StringBuilder();
-        for(String string : packet) {
-            result.append(string);
-            result.append(",");
-        }
-        return result.length() > 0 ? result.substring(0, result.length() - 1): "";
+        String delimiter = " ";
+        String result = String.join(delimiter, packet);
+        return result;
     
     }
 } //end class ChatClient
