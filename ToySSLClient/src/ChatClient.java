@@ -97,7 +97,6 @@ class ChatClient {
         // step 1: client sends out CP01
          String[] CP01 = chat.startHandshake();
          String CP01String = chat.converttoString(CP01);
-         System.out.println(CP01String);
          outgoing.println(CP01String);
          outgoing.flush();
 
@@ -105,7 +104,6 @@ class ChatClient {
          
        // step 3: client receives SP01, verifies the server and sends out CP02
         String SP01 = incoming.readLine();
-        System.out.println(SP01);
         String CP02 [] = chat.certifyServer(SP01);
         outgoing.println(chat.converttoString(CP02));
         outgoing.flush();
@@ -125,9 +123,10 @@ class ChatClient {
         
         if(chat.CheckMAC(ServerMAC) == false)
         {
-            throw new Exception("Connected program is not a ChatClient!");
+            throw new Exception("Connected program is not a ChatServer!");
         }
          System.out.println("Connected.  Enter your first message.");
+          System.out.println("----------------------------------------");
       }
       catch (Exception e) {
          System.out.println("An error occurred while opening connection.");

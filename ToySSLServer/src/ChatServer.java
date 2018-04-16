@@ -105,26 +105,26 @@ public class ChatServer {
          server.certifyClient(CP02String);
          
          
-        //keys are generated;
+        //step 4: keys are generated;
        server.ServerGenerateKeys();
        
        
        
-        // the MAC is read
+     //client mac is received
         String clientMAC = incoming.readLine();  
-        
-
-
-        //THE mac os generated and send out to Client
+        //step 6: THE mac is generated and send out to Client
          String MAC = server.generateServerMAC();
          outgoing.println(MAC);
+         outgoing.flush();
          
-        
-        outgoing.flush();
-        if (! server.CheckMAC(clientMAC) ) {
-            throw new Exception("Connected program is not a ChatClient!");
+
+        //step 7: MAC is checked :
+        if(server.CheckMAC(clientMAC) == false)
+        {
+            throw new Exception("Connected program is not a ChatServer!");
         }
          System.out.println("Connected.  Waiting for the first message.");
+         System.out.println("----------------------------------------");
       }
       catch (Exception e) {
          System.out.println("An error occurred while opening connection.");
