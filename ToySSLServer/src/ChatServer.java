@@ -110,9 +110,9 @@ public class ChatServer {
        
        
        
-     //client mac is received
+                //client mac is received
         String clientMAC = incoming.readLine();  
-        //step 6: THE mac is generated and send out to Client
+    //step 6: THE mac is generated and send out to Client
          String MAC = server.generateServerMAC();
          outgoing.println(MAC);
          outgoing.flush();
@@ -215,7 +215,8 @@ public class ChatServer {
        //the clientNC is taken out of packet
        ClientNC = Integer.parseInt(CP01[3]);
        //System.out.println(ClientNC);
-       ///HERE NEED TO ENCRYPRt WITH SERVER PRIVATE KEY
+       
+       //keys are generated using rsa
        rsa.genKeys();
       
        BigInteger NC = new BigInteger(CP01[3]); 

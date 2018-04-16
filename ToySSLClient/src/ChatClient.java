@@ -119,8 +119,6 @@ class ChatClient {
 
         // step 7: MAC is checked
         String ServerMAC = incoming.readLine();  
-        
-        
         if(chat.CheckMAC(ServerMAC) == false)
         {
             throw new Exception("Connected program is not a ChatServer!");
@@ -314,13 +312,9 @@ class ChatClient {
         System.out.println("    MS: " + MS);
 
        
-       //sepeare reulst in 2 char chunks, each representing a key
-       //NOT DONE 
+ 
    }
-   //Client sends a MAC of all the handshake messages
-    //MACc = MAC(Mc, clientPacket01, serverPacket01, 
-    //clientPacket02)
-
+   //this generates the MAC of all the packets combined
     public String generateClientMAC(){
         
         System.out.println("-----------------------------------------");
@@ -356,7 +350,7 @@ class ChatClient {
         System.out.println("    the MAC is send out");
         return result.toString();
     }
-    //If MACs (Calculated) == MACs (received)
+    //If MACs (Calculated) == MACs (received) the handhsake was not tampered with and can be used
     public boolean CheckMAC(String fromServer){
         
         
