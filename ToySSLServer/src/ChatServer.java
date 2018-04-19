@@ -19,6 +19,15 @@ import java.util.Random;
  * entering the string "quit" when prompted for a message.  Note that the first 
  * character of any string sent over the connection must be 0 or 1; this
  * character is interpreted as a command for security purpose
+ * 
+ * 
+ * 
+ * 
+ * 
+ * @Author <Dariusz Jalowiec, Tom Callahan>
+ * 
+ * 
+ * Simulates the handshake, then simulates the messages being send over the network.
  */
 public class ChatServer {
 
@@ -282,7 +291,7 @@ public class ChatServer {
 
        
    } 
-   
+    //indepedantly generate keys 
      public void ServerGenerateKeys(){
        //mulitpy together to generate keys
        //int result = ClientNC * ServerNC * pre_master_key;
@@ -299,26 +308,29 @@ public class ChatServer {
         System.out.println("    KS: " + KS);
         System.out.println("    MS: " + MS);
    }
-    
+    //take a packet and make it a array
      private String[] convertToArray(String packet){
          return packet.split(" ");
     }
+        //take a packet and make it a array
     private String[] convertToArray2(String packet){
          return packet.split(",");
     }
-
+    //take packet array and make it a string
     private String converttoString(String[] packet){
         String delimiter = " ";
         String result = String.join(delimiter, packet);
         return result;
     
     }
+       //take a packet and make it a array
     private String converttoString2(String[] packet){
         String delimiter = ",";
         String result = String.join(delimiter, packet);
         return result;
     
     }
+    //generate ServeMAC from the packets
     public String generateServerMAC(){
         
         System.out.println("-----------------------------------------");
@@ -354,6 +366,8 @@ public class ChatServer {
         System.out.println("    the MAC is send out");
         return result.toString();
     }
+    
+    //take the packet from the client, and compare to the one we generated
     public boolean CheckMAC(String fromServer){
         
         

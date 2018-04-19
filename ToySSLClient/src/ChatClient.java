@@ -18,6 +18,15 @@ import java.util.Random;
  * entering the string "quit" when prompted for a message.  Note that the first 
  * character of any string sent over the connection must be 0 or 1; this
  * character is interpreted as a command for security purpose. 
+ * 
+ * 
+ *  * 
+ * 
+ * 
+ * @Author <Dariusz Jalowiec, Tom Callahan>
+ * 
+ * 
+ * Simulates the handshake, then simulates the messages being send over the network.
  */
 class ChatClient {
 
