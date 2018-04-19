@@ -57,7 +57,7 @@ class ChatClient {
    RSA rsa = new RSA();
    MacCipher mac = new MacCipher();
    List<String[]> Queue = new ArrayList<String[]>();
-     
+   
 
 
    public static void main(String[] args) {
@@ -91,7 +91,6 @@ class ChatClient {
         System.out.println("STEP 1: Client sends CP01. It Contains");
         ChatClient chat = new ChatClient();
 
-         
        
          
         // step 1: client sends out CP01
@@ -151,7 +150,16 @@ class ChatClient {
                System.out.println("Connection closed.");
                break;
             }
+            ChatClient chat = new ChatClient();
+            String[] sentPacket = chat.appendFields(messageOut);
+            System.out.println("Sent Packet is: ");
+            System.out.println("        Type: " + sentPacket[0]);
+            System.out.println("        Length: " + sentPacket[1]);
+            System.out.println("        Data: " + sentPacket[2]);
+            System.out.println("        MAC: " + sentPacket[3]);
+            messageOut = chat.converttoString2(sentPacket);
             outgoing.println(MESSAGE + messageOut);
+            
             outgoing.flush();
             if (outgoing.checkError()) {
                throw new IOException("Error occurred while transmitting message.");
@@ -169,7 +177,14 @@ class ChatClient {
                   break;
                }
                messageIn = messageIn.substring(1);
-            }
+            }           
+            String[] msgArr = chat.convertToArray2(messageIn);
+            messageIn = chat.removeFields(chat.convertToArray2(messageIn));
+            System.out.println("Recieved Packet is: ");
+            System.out.println("        Type: " + msgArr[0]);
+            System.out.println("        Length: " + msgArr[1]);
+            System.out.println("        Data: " + msgArr[2]);
+            System.out.println("        MAC: " + msgArr[3]);
             System.out.println("RECEIVED:  " + messageIn);
          }
       }
@@ -396,18 +411,85 @@ class ChatClient {
 
     }
     
-    
+    //Splits packets
     private String[] convertToArray(String packet){
          return packet.split(" ");
      }
 
+    //Splits message received by commas
+    private String[] convertToArray2(String packet){
+         return packet.split(",");
+     }
     
     
-    
+    //Converts to a string using space delimiter. used for packetArrays
     private String converttoString(String[] packet){
         String delimiter = " ";
         String result = String.join(delimiter, packet);
         return result;
     
+    }
+    
+    //Converts packet using comma delimiter. used for message
+    private String converttoString2(String[] packet){
+        String delimiter = ",";
+        String result = String.join(delimiter, packet);
+        return result;
+    
+    }
+    
+    //Message is Converted to packet for Server
+    public String[] appendFields(String message)
+    {
+        String[] result = new String[4];
+        
+        //Step 1: Add TYPE
+        System.out.println("convert message to packet");
+        result[0] = "1";
+        System.out.println("        Step 1: Calculate Type = " + result[0]);
+
+        
+        //Step 2: Add Length
+        int length = message.length();
+        result[1] = Integer.toString(length);
+        System.out.println("        Step 2: Calculate Length = " + result[1]);
+
+        
+        //Step 3: Add Data
+        result[2] = message;
+        MacCipher MAC = new MacCipher();       
+        String finalONE = message.replaceAll("\\s","");
+        System.out.println("        Step 3: Calculate Data = " + result[2]);
+
+        //Step 4: Add MAC of data
+        BigInteger bigMAC = new BigInteger(finalONE.getBytes());
+        String bigMACString = (MAC.encrypt(bigMAC, new BigInteger("2"))).toString();
+        result[3] = bigMACString;
+        System.out.println("        Step 4: Calculate MAC = " + result[3]);
+        return result;
+    }
+   
+    //Extract Data And Compare MAC
+    public String removeFields(String[] message){
+        System.out.println("Data Extraction and Comparison of MAC:");
+        
+        //Step 1: Extract Data
+        String data = message[2];
+        System.out.println("        Step 1: Extract Data From Packet: " + message[2]);
+        MacCipher MAC = new MacCipher();
+        String finalONE = data.replaceAll("\\s","");
+        BigInteger bigMAC = new BigInteger(finalONE.getBytes());
+        String bigMACString = (MAC.encrypt(bigMAC, new BigInteger("2"))).toString();
+       
+        //Step 2: Compare MAC of received data with MAC received
+        System.out.println("        Step 2: MAC Calculated and Compared: ");
+        System.out.println("            MAC Received: " + message[3]);
+        System.out.println("            MAC Calculated: " + bigMACString);
+        if(bigMACString.equals(message[3])){
+        return data;
+        }else{
+           System.out.println("Data Changed!");
+           return "-1";
+        }
     }
 } //end class ChatClient
